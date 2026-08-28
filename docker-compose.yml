@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  retro-proxy:
+    image: nginx:alpine
+    container_name: retro-proxy
+    ports:
+      - "3050:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - retro-frontend
+      - retro-backend
+    restart: unless-stopped
+
+  retro-backend:
+    build: ./backend
+    container_name: retro-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - RETRO_API_KEY=
+      - RETRO_API_USERNAME=
+      - ROM_STORAGE_PATH=/data/roms
+      - SAVE_STORAGE_PATH=/data/saves
+    volumes:
+      - /DATA/retrolab/roms:/data/roms:ro
+      - /DATA/retrolab/saves:/data/saves:rw
+    restart: unless-stopped
+
+  retro-frontend:
+    build: ./frontend
+    container_name: retro-frontend
+    expose:
+      - "80"
+    restart: unless-stopped
