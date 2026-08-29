@@ -1,4 +1,4 @@
-package handler
+package proxy
 
 import (
 	"encoding/json"
@@ -10,6 +10,13 @@ import (
 	"retro-gallery/internal/domain/game"
 	"retro-gallery/internal/domain/player"
 )
+
+type handler struct {
+	client             client.RetroAchievementsClient
+	playerService      player.Service
+	achievementService achievement.Service
+	gameService        game.Service
+}
 
 const (
 	recentGamesParam   = "g"
@@ -26,15 +33,8 @@ const (
 	cacheHeader       = "X-Cache-Status"
 )
 
-type ProxyHandler struct {
-	client             client.RetroAchievementsClient
-	playerService      player.Service
-	achievementService achievement.Service
-	gameService        game.Service
-}
-
-func NewProxyHandler(client client.RetroAchievementsClient, playerService player.Service, achievementService achievement.Service, gameService game.Service) *ProxyHandler {
-	return &ProxyHandler{
+func NewHandler(client client.RetroAchievementsClient, playerService player.Service, achievementService achievement.Service, gameService game.Service) *handler {
+	return &handler{
 		client:             client,
 		playerService:      playerService,
 		achievementService: achievementService,
@@ -42,7 +42,7 @@ func NewProxyHandler(client client.RetroAchievementsClient, playerService player
 	}
 }
 
-func (h *ProxyHandler) GetPlayerSummary(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetPlayerSummary(w http.ResponseWriter, r *http.Request) {
 
 	query := r.URL.Query()
 	recentGames := query.Get(recentGamesParam)
@@ -73,7 +73,7 @@ func (h *ProxyHandler) GetPlayerSummary(w http.ResponseWriter, r *http.Request) 
 
 }
 
-func (h *ProxyHandler) GetRecentUnlocks(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetRecentUnlocks(w http.ResponseWriter, r *http.Request) {
 
 	query := r.URL.Query()
 	minutesLookBack := query.Get(minutesLookBackParam)
@@ -98,7 +98,7 @@ func (h *ProxyHandler) GetRecentUnlocks(w http.ResponseWriter, r *http.Request) 
 	writeMiss(w, body, statusCode)
 }
 
-func (h *ProxyHandler) GetCompletedGames(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetCompletedGames(w http.ResponseWriter, r *http.Request) {
 	data, statusCode, hit, err := h.gameService.GetCompletedGames(r.Context(), h.client.GetUser())
 
 	if err != nil {
@@ -107,34 +107,6 @@ func (h *ProxyHandler) GetCompletedGames(w http.ResponseWriter, r *http.Request)
 	}
 
 	body, err := json.Marshal(data)
-
-	if hit {
-		writeHit(w, body)
-		return
-	}
-	writeMiss(w, body, statusCode)
-}
-
-func (h *ProxyHandler) GetGameDetails(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query()
-	gameID := query.Get("id")
-
-	if gameID == domain.Empty {
-		writeError(w, http.StatusBadRequest, fmt.Errorf("missing query parameter: id"))
-		return
-	}
-
-	data, statusCode, hit, err := h.gameService.GetGameDetails(r.Context(), h.client.GetUser(), gameID)
-	if err != nil {
-		writeError(w, statusCode, err)
-		return
-	}
-
-	body, err := json.Marshal(data)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
-		return
-	}
 
 	if hit {
 		writeHit(w, body)
@@ -162,4 +134,32 @@ func writeError(w http.ResponseWriter, statusCode int, err error) {
 	w.WriteHeader(statusCode)
 	w.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err.Error())))
 	return
+}
+
+func (h *handler) GetGameDetails(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	gameID := query.Get("id")
+
+	if gameID == domain.Empty {
+		writeError(w, http.StatusBadRequest, fmt.Errorf("missing query parameter: id"))
+		return
+	}
+
+	data, statusCode, hit, err := h.gameService.GetGameDetails(r.Context(), h.client.GetUser(), gameID)
+	if err != nil {
+		writeError(w, statusCode, err)
+		return
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if hit {
+		writeHit(w, body)
+		return
+	}
+	writeMiss(w, body, statusCode)
 }

@@ -10,7 +10,8 @@ import (
 	"retro-gallery/internal/domain/achievement"
 	"retro-gallery/internal/domain/game"
 	"retro-gallery/internal/domain/player"
-	"retro-gallery/internal/handler"
+	"retro-gallery/internal/handler/download"
+	"retro-gallery/internal/handler/proxy"
 )
 
 func main() {
@@ -27,18 +28,19 @@ func main() {
 	playerService := player.NewService(client, cache)
 	achievementService := achievement.NewService(client, cache)
 	gameService := game.NewService(client, cache)
-	handler := handler.NewProxyHandler(client, playerService, achievementService, gameService)
-
+	proxyHandler := proxy.NewHandler(client, playerService, achievementService, gameService)
+	downloadHandler := download.NewHandler()
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/api/v1/retro/player", handler.GetPlayerSummary)
-	mux.HandleFunc("/api/v1/retro/recent", handler.GetRecentUnlocks)
-	mux.HandleFunc("/api/v1/retro/completed", handler.GetCompletedGames)
-	mux.HandleFunc("/api/v1/retro/details", handler.GetGameDetails)
+	mux.HandleFunc("/api/v1/retro/player", proxyHandler.GetPlayerSummary)
+	mux.HandleFunc("/api/v1/retro/recent", proxyHandler.GetRecentUnlocks)
+	mux.HandleFunc("/api/v1/retro/completed", proxyHandler.GetCompletedGames)
+	mux.HandleFunc("/api/v1/retro/details", proxyHandler.GetGameDetails)
+	mux.HandleFunc("/api/v1/download", downloadHandler.RomDownload)
 
 	serverAddr := config.ServerPort
 
 	if err := http.ListenAndServe(serverAddr, mux); err != nil {
-		log.Fatalf("❌ Critical platform failure: %v", err)
+		log.Fatalf("Critical platform failure: %v", err)
 	}
 }
