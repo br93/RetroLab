@@ -36,7 +36,7 @@ func main() {
 	mux.HandleFunc("/api/v1/retro/recent", proxyHandler.GetRecentUnlocks)
 	mux.HandleFunc("/api/v1/retro/completed", proxyHandler.GetCompletedGames)
 	mux.HandleFunc("/api/v1/retro/details", proxyHandler.GetGameDetails)
-	mux.HandleFunc("/api/v1/download", downloadHandler.RomDownload)
+	mux.HandleFunc("/api/v1/download/rom", downloadHandler.RomDownload)
 
 	serverAddr := config.ServerPort
 

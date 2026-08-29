@@ -45,15 +45,18 @@ func (h *handler) RomDownload(w http.ResponseWriter, r *http.Request) {
 
 	file := matches[0]
 
-	fileInfo, err := os.Stat(file)
-	if err != nil || fileInfo.IsDir() {
+	fileinfo, err := os.Stat(file)
+	if err != nil || fileinfo.IsDir() {
 		http.Error(w, "ROM file archive is unreadable", http.StatusNotFound)
 		return
 	}
 
+	filesize := strconv.FormatInt(fileinfo.Size(), 10)
 	romname := filepath.Base(file)
 
 	w.Header().Set("Content-Disposition", "attachment; filename="+romname)
+	w.Header().Set("Content-Type", "application/x-7z-compressed")
+	w.Header().Set("Content-Length", filesize)
 
 	http.ServeFile(w, r, file)
 }
