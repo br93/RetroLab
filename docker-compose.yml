@@ -24,8 +24,8 @@ services:
       - ROM_STORAGE_PATH=/data/roms
       - SAVE_STORAGE_PATH=/data/saves
     volumes:
-      - /DATA/retrolab/roms:/data/roms:ro
-      - /DATA/retrolab/saves:/data/saves:rw
+      - /home/$USER/DATA/retrolab/roms:/data/roms:ro
+      - /home/$USER/DATA/retrolab/saves:/data/saves:rw
     restart: unless-stopped
 
   retro-frontend:
