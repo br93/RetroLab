@@ -91,5 +91,7 @@ func (s *service) GetGameDetails(ctx context.Context, user, gameID string) (r *D
 		return nil, http.StatusInternalServerError, hit, err
 	}
 
+	detailedDetailed.Title = strings.TrimPrefix(detailedDetailed.Title, "~Hack~ ")
+
 	return &detailedDetailed, statusCode, hit, nil
 }
