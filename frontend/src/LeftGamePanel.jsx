@@ -169,6 +169,8 @@ export function LeftGamePanel({ isOpen, onClose, details, loading }) {
           {/* Row 1: Full-Width ROM Downloader */}
           <a
             href={`/api/download/rom?id=${details.ID}`}
+            target="_blank" 
+            rel="noopener noreferrer"
             download={`${details.Title}.7z`}
             className="block text-center font-mono text-[9px] font-black tracking-widest bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 py-3 rounded-xl transition w-full"
           >
