@@ -168,8 +168,8 @@ export function LeftGamePanel({ isOpen, onClose, details, loading }) {
 
           {/* Row 1: Full-Width ROM Downloader */}
           <a
-            href={`/api/v1/retro/download/rom?id=${details.ID}`}
-            download
+            href={`/api/download/rom?id=${details.ID}`}
+            download={`${details.Title}.7z`}
             className="block text-center font-mono text-[9px] font-black tracking-widest bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 py-3 rounded-xl transition w-full"
           >
             📦 DOWNLOAD ROM FILE
@@ -184,7 +184,7 @@ export function LeftGamePanel({ isOpen, onClose, details, loading }) {
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 className="hidden"
-                accept=".state,.srm,.sav,.dat"
+                accept=".state,.srm,.sav,.dat,.7z"
               />
               <button
                 onClick={handleUploadButtonClick}
@@ -200,7 +200,7 @@ export function LeftGamePanel({ isOpen, onClose, details, loading }) {
 
             {/* Right Box: Load State Stream Action Link */}
             <a
-              href={`/api/v1/retro/download/savestate?id=${details.ID}`}
+              href={`/api/download/savestate?id=${details.ID}`}
               download
               className="text-center flex items-center justify-center font-mono text-[9px] font-black tracking-widest bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 py-3 rounded-xl transition"
             >
