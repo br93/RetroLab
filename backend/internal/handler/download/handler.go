@@ -16,8 +16,11 @@ func NewHandler() *handler {
 	return &handler{}
 }
 
-func (h *handler) RomDownload(w http.ResponseWriter, r *http.Request) {
+func (h *handler) Download(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
+	rom := r.URL.Query().Get("rom")
+	save := r.URL.Query().Get("save")
+
 	if id == domain.Empty {
 		http.Error(w, "Missing id parameter", http.StatusBadRequest)
 		return
@@ -28,9 +31,27 @@ func (h *handler) RomDownload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	safedir := os.Getenv("ROM_STORAGE_PATH")
+	var safedir string
+	var extension string
+	var contenttype string
 
-	searchPattern := filepath.Clean(filepath.Join(safedir, id, "*.7z"))
+	if rom == "true" {
+		safedir = os.Getenv("ROM_STORAGE_PATH")
+		extension = "*.7z"
+		contenttype = "application/x-7z-compressed"
+	} else if save == "true" {
+		safedir = os.Getenv("SAVE_STORAGE_PATH")
+		// ONLY SRM AT THE MOMENT, WILL IMPROVE LATER //
+		extension = "*.srm"
+		contenttype = "application/octet-stream"
+	}
+
+	if safedir == domain.Empty {
+		http.Error(w, "Missing rom or save parameter", http.StatusBadRequest)
+		return
+	}
+
+	searchPattern := filepath.Clean(filepath.Join(safedir, id, extension))
 
 	if !strings.HasPrefix(searchPattern, safedir) {
 		http.Error(w, "Access Denied: Invalid path sequence", http.StatusForbidden)
@@ -39,7 +60,7 @@ func (h *handler) RomDownload(w http.ResponseWriter, r *http.Request) {
 
 	matches, err := filepath.Glob(searchPattern)
 	if err != nil || len(matches) != 1 {
-		http.Error(w, "ROM file archive not found", http.StatusNotFound)
+		http.Error(w, "File archive not found", http.StatusNotFound)
 		return
 	}
 
@@ -47,15 +68,15 @@ func (h *handler) RomDownload(w http.ResponseWriter, r *http.Request) {
 
 	fileinfo, err := os.Stat(file)
 	if err != nil || fileinfo.IsDir() {
-		http.Error(w, "ROM file archive is unreadable", http.StatusNotFound)
+		http.Error(w, "File archive is unreadable", http.StatusNotFound)
 		return
 	}
 
 	filesize := strconv.FormatInt(fileinfo.Size(), 10)
-	romname := filepath.Base(file)
+	filename := filepath.Base(file)
 
-	w.Header().Set("Content-Disposition", "attachment; filename="+romname)
-	w.Header().Set("Content-Type", "application/x-7z-compressed")
+	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
+	w.Header().Set("Content-Type", contenttype)
 	w.Header().Set("Content-Length", filesize)
 
 	http.ServeFile(w, r, file)

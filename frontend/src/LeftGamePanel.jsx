@@ -168,7 +168,7 @@ export function LeftGamePanel({ isOpen, onClose, details, loading }) {
 
           {/* Row 1: Full-Width ROM Downloader */}
           <a
-            href={`/api/download/rom?id=${details.ID}`}
+            href={`/api/download?rom=true&id=${details.ID}`}
             target="_blank" 
             rel="noopener noreferrer"
             download={`${details.Title}.7z`}
@@ -179,14 +179,14 @@ export function LeftGamePanel({ isOpen, onClose, details, loading }) {
 
           {/* Row 2: Split Action Columns */}
           <div className="grid grid-cols-2 gap-2.5">
-            {/* Left Box: Save State Upload Trigger */}
+            {/* Left Box: Save Upload Trigger */}
             <div>
               <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 className="hidden"
-                accept=".state,.srm,.sav,.dat,.7z"
+                accept=".srm"
               />
               <button
                 onClick={handleUploadButtonClick}
@@ -196,17 +196,19 @@ export function LeftGamePanel({ isOpen, onClose, details, loading }) {
                   : 'bg-slate-950 hover:bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
                   }`}
               >
-                {uploadStatus || '📤 SAVE STATE'}
+                📤 UPLOAD SAVE
               </button>
             </div>
 
-            {/* Right Box: Load State Stream Action Link */}
+            {/* Right Box: Download Save Stream Action Link */}
             <a
-              href={`/api/download/savestate?id=${details.ID}`}
-              download
+              href={`/api/download?save=true&id=${details.ID}`}
+              target="_blank" 
+              rel="noopener noreferrer"
+              download={`${details.Title}.srm`}
               className="text-center flex items-center justify-center font-mono text-[9px] font-black tracking-widest bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 py-3 rounded-xl transition"
             >
-              📥 LOAD STATE
+              📥 DOWNLOAD SAVE
             </a>
           </div>
 
