@@ -72,3 +72,6 @@ pnpm-debug.log*
 .eslintcache
 .stylelintcache
 .turbo/
+
+*.xz
+*_server.yml

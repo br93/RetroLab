@@ -12,6 +12,9 @@ services:
       - retro-frontend
       - retro-backend
     restart: unless-stopped
+    labels:
+      title: "RetroLab"
+      port: "3050"
 
   retro-backend:
     build: ./backend
