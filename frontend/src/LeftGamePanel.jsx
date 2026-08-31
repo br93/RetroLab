@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 
 export function LeftGamePanel({ isOpen, onClose, details, loading }) {
   if (!isOpen) return null;
@@ -26,7 +26,7 @@ export function LeftGamePanel({ isOpen, onClose, details, loading }) {
   const gameBannerUrl = details.ImageTitle?.includes('000002.png')
     ? details.ImageIcon
     : details.ImageTitle;
-
+  
   // Trigger the hidden native file input browser selection dialog
   const handleUploadButtonClick = () => {
     fileInputRef.current?.click();
@@ -41,18 +41,20 @@ export function LeftGamePanel({ isOpen, onClose, details, loading }) {
     setUploadStatus('STREAMING...');
 
     const formData = new FormData();
-    formData.append('saveState', selectedFile);
+    formData.append('file', selectedFile);
 
     try {
-      const response = await fetch(`/api/v1/retro/upload/savestate?id=${details.ID}`, {
+      const response = await fetch(`/api/upload?id=${details.ID}`, {
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error('Server storage target registration issue.');
+        const errorText = await response.text();
+        throw new Error(errorText || 'Upload failed');
       }
 
+      alert("Save file uploaded");
       setUploadStatus('✅ SUCCESS!');
       setTimeout(() => setUploadStatus(''), 3000);
     } catch (err) {
@@ -196,7 +198,7 @@ export function LeftGamePanel({ isOpen, onClose, details, loading }) {
                   : 'bg-slate-950 hover:bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
                   }`}
               >
-                📤 UPLOAD SAVE
+                {uploading ? '⚡ UPLOADING SAVE...' : '📤 UPLOAD SAVE'}
               </button>
             </div>
 

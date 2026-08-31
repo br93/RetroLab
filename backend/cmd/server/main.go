@@ -12,6 +12,7 @@ import (
 	"retro-gallery/internal/domain/player"
 	"retro-gallery/internal/handler/download"
 	"retro-gallery/internal/handler/proxy"
+	"retro-gallery/internal/handler/upload"
 )
 
 func main() {
@@ -30,6 +31,7 @@ func main() {
 	gameService := game.NewService(client, cache)
 	proxyHandler := proxy.NewHandler(client, playerService, achievementService, gameService)
 	downloadHandler := download.NewHandler()
+	uploadHandler := upload.NewHandler()
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/v1/retro/player", proxyHandler.GetPlayerSummary)
@@ -37,6 +39,7 @@ func main() {
 	mux.HandleFunc("/api/v1/retro/completed", proxyHandler.GetCompletedGames)
 	mux.HandleFunc("/api/v1/retro/details", proxyHandler.GetGameDetails)
 	mux.HandleFunc("/api/v1/download", downloadHandler.Download)
+	mux.HandleFunc("/api/v1/upload", uploadHandler.Upload)
 
 	serverAddr := config.ServerPort
 

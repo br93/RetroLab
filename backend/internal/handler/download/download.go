@@ -5,5 +5,5 @@ import (
 )
 
 type Handler interface {
-	RomDownload(w http.ResponseWriter, r *http.Request)
+	Download(w http.ResponseWriter, r *http.Request)
 }
